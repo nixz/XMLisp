@@ -1845,7 +1845,14 @@
     (with-open-file (File Filename :direction :input :if-does-not-exist If-Does-Not-Exist)
       (let ((*Xml-Stream* File))
         (declare (special *Xml-Stream*))
-        (read File)))))
+        (let ((next nil)
+              (output nil))
+          (loop
+             (setf output (if (typep next (find-class 'sgml-tag))
+                              output
+                              next))
+             (setf next (read File nil :eof))
+             (when (eq next :eof) (return output))))))))
 
 
 (defmethod SAVE-OBJECT ((Self xml-serializer) Filename &key Verbose (If-Exists :error) (Xml-Header "<?xml version=\"1.0\"?>"))
