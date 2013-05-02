@@ -139,7 +139,7 @@
 (export '(;; CODEC
           decode-xml-string encode-xml-string
           ;; classes
-          xml-serializer ![cdata[ !doctype !--
+          xml-serializer ![cdata[ ![cdata[ecmascript ![cdata[javascript !doctype !--
           ;; aggregation methods
           set-attribute-value add-subobject part-of add-object-to-slot cleanup-sub-object-slots
           ;; print control methods
@@ -1206,10 +1206,16 @@
   ()
   (:documentation "SGML uninterpreted content only class. Does not encode/decode strings"))
 
-
 (defmethod END-TAG-NAME-STRING ((Self ![cdata[))
    "]]>")
 
+(defclass ![CDATA[ecmascript (![cdata[)
+  ()
+  (:documentation "Used to read ecmascript."))
+
+(defclass ![CDATA[javascript (![cdata[)
+  ()
+  (:documentation "Used to read ecmascript."))
 
 ;*************************************
 ;*  !DOCTYPE    Class                *
@@ -1333,15 +1339,21 @@
   out: Symbol symbol.
   Turn <Name> into <Symbol> taking into account the current readtable's case."
   (let ((Colon-Position (position #\: Name)))
+    (when (string= Name "![CDATA[ecmascript:")
+      (setf Name "![CDATA[ecmascript")
+      (setf Colon-Position nil))
+    (when (string= Name "![CDATA[javascript:")
+      (setf Name "![CDATA[javascript")
+      (setf Colon-Position nil))
     (if Colon-Position
-      (intern 
-       (readtable-string (subseq Name (1+ Colon-Position)))
-       (or
-        ;; read-from-string does the readtable stuff
-        ;; slow but this is not used all that often
-        (find-package (intern (readtable-string (subseq Name 0 Colon-Position))))
-        (error "trying to read XML name \"~A\" but contains reference to non existing package." Name)))
-      (intern (readtable-string Name)))))
+        (intern
+         (readtable-string (subseq Name (1+ Colon-Position)))
+         (or
+          ;; read-from-string does the readtable stuff
+          ;; slow but this is not used all that often
+          (find-package (intern (readtable-string (subseq Name 0 Colon-Position))))
+          (error "trying to read XML name \"~A\" but contains reference to non existing package." Name)))
+        (intern (readtable-string Name)))))
 
 ;_____________________________
 ; Pathname conversion         |

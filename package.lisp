@@ -38,6 +38,8 @@
   (:export :xml-serializer
            :sgml-tag
            :![cdata[
+           :![cdata[ecmascript
+           :![cdata[javascript
            :!doctype
            :!--
            :parse-file-name))
